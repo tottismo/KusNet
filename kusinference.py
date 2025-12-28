@@ -10,10 +10,18 @@ import os
 MODEL_PATH = "resnet_kus_5li.pth"
 
 DATA_PATH = "mp3_sliced"
-LABELS_PATH = TARGET_BIRDS = sorted([
-    d for d in os.listdir(DATA_PATH)
-    if os.path.isdir(os.path.join(DATA_PATH, d))
-])
+TARGET_BIRDS = ['Acrocephalus-arundinaceus', 'Acrocephalus-dumetorum', 'Acrocephalus-palustris',
+               'Acrocephalus-schoenobaenus', 'Aegolius-funereus', 'Alauda-arvensis', 'Athene-noctua', 'Bubo-bubo',
+               'Caprimulgus-europaeus', 'Carduelis-carduelis', 'Carpodacus-erythrinus', 'Chloris-chloris', 'Crex-crex',
+               'Cuculus-canorus', 'Cyanistes-caeruleus', 'Emberiza-calandra', 'Emberiza-cirlus', 'Emberiza-citrinella',
+               'Emberiza-hortulana', 'Emberiza-schoeniclus', 'Erithacus-rubecula', 'Ficedula-hypoleuca', 'Ficedula-parva',
+               'Fringilla-coelebs', 'Glaucidium-passerinum', 'Hippolais-icterina', 'Hirundo-rustica', 'Linaria-cannabina',
+               'Locustella-naevia', 'Loxia-curvirostra', 'Luscinia-luscinia', 'Luscinia-megarhynchos', 'Luscinia-svecica',
+               'Oriolus-oriolus', 'Parus-major', 'Periparus-ater', 'Phoenicurus-phoenicurus', 'Phylloscopus-collybita',
+               'Phylloscopus-sibilatrix', 'Phylloscopus-trochilus', 'Pyrrhula-pyrrhula', 'Sonus-naturalis', 'Strix-aluco',
+               'Sylvia-atricapilla', 'Sylvia-borin', 'Sylvia-communis', 'Sylvia-curruca', 'Troglodytes-troglodytes', 'Turdus-merula',
+               'Turdus-philomelos']
+
 
 # Kontrol için yazdıralım
 print(f" Tespit Edilen Sınıf Sayısı: {len(TARGET_BIRDS)}")
@@ -24,28 +32,16 @@ SAMPLE_RATE = 22050
 DURATION = 4.0  # Saniye
 NUM_SAMPLES = int(SAMPLE_RATE * DURATION)  # 22050 * 4
 
-try:
-    # Klasörden otomatik okuma (Alfabetik sıra çok önemli!)
-    TARGET_BIRDS = sorted([
-        d for d in os.listdir(LABELS_PATH)
-        if os.path.isdir(os.path.join(LABELS_PATH, d))
-    ])
-    print(f" {len(TARGET_BIRDS)} adet sınıf başarıyla yüklendi.")
-except Exception as e:
-    print(" UYARI: Klasör yolu bulunamadı. Lütfen TARGET_BIRDS listesini elle doldurun.")
-    # Örnek: TARGET_BIRDS = ['Kus1', 'Kus2', ...]
-    TARGET_BIRDS = []
-
 class ResNetBirdClassifier(nn.Module):
     def __init__(self, num_classes):
         super(ResNetBirdClassifier, self).__init__()
-        # Inference yapacağımız için weights=None diyebiliriz (dosyadan yükleyeceğiz)
+        # weights=None diyebiliriz (dosyadan yükleyeceğiz)
         self.model = models.resnet18(weights=None)
 
-        # Giriş Katmanı (1 Kanal - Spektrogram)
+        # Giriş Katmanı
         self.model.conv1 = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)
 
-        # Çıkış Katmanı (Dropout + Linear)
+        # Çıkış Katmanı
         num_features = self.model.fc.in_features
         self.model.fc = nn.Sequential(
             nn.Dropout(0.35),
@@ -88,7 +84,6 @@ def predict_bird_smart(audio_path):
     # Ses dosyasını 4 saniyelik parçalara ayırıp hepsini modele soracağız.
     batch_tensors = []
 
-    # Adım adım ilerle (hop olmadan, direkt 4sn, 4sn diye bölelim)
     for i in range(0, len(signal), NUM_SAMPLES):
         chunk = signal[i: i + NUM_SAMPLES]
 
@@ -96,15 +91,13 @@ def predict_bird_smart(audio_path):
         if len(chunk) < SAMPLE_RATE:
             continue
 
-        # Kısa parçayı doldur (Padding)
+        # padding
         if len(chunk) < NUM_SAMPLES:
             chunk = np.pad(chunk, (0, NUM_SAMPLES - len(chunk)))
 
-        # Tensöre çevir
         chunk_tensor = torch.from_numpy(chunk).float().to(DEVICE)
         chunk_tensor = chunk_tensor.unsqueeze(0)  # Channel ekle (1, Time)
 
-        # Spektrograma çevir
         spec = mel_transform(chunk_tensor)
         spec = db_transform(spec)
         batch_tensors.append(spec)
@@ -127,17 +120,26 @@ def predict_bird_smart(audio_path):
 
     return results
 
+ornekler = [
+    ["ornek_ses\Athene-noctua-121557_p4.wav"],
+    ["ornek_ses/Crex-crex-82069_p14.wav"],
+    ["ornek_ses/Parus-major-122942_p37.wav"],
+    ["ornek_ses/Sylvia-borin-132972_p14.wav"],
+    ["ornek_ses/Turdus-merula-127996_p9.wav"]
+]
+
 interface = gr.Interface(
     fn=predict_bird_smart,
     inputs=gr.Audio(type="filepath", label="Kuş Sesi Yükle veya Kaydet"),
     outputs=gr.Label(num_top_classes=5, label="Tahmin Sonuçları"),
-    title="🦅 AvianAcoustics: Profesyonel Kuş Tanıma",
+    title=" KuşNet: Kuş Tanıma",
     description=f"Bu sistem **{len(TARGET_BIRDS)} farklı kuş türünü** tanıyabilir. Uzun bir kayıt yüklediğinizde, yapay zeka kaydın tamamını dinleyip genel bir karar verir.",
     theme="default",
-    allow_flagging="never"
+    allow_flagging="never",
+    examples=ornekler,
+    cache_examples=False
 )
 
 if __name__ == "__main__":
-    print("🚀 Arayüz başlatılıyor...")
-    # share=True diyerek herkese açık link oluşturabilirsin
+    print(" Arayüz başlatılıyor...")
     interface.launch(share=True)

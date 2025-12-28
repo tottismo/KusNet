@@ -21,15 +21,14 @@ import torchvision.models as models
 DATA_PATH = r"C:\Users\hp\PycharmProjects\pythonProject1\mp3_sliced"
 MODEL_SAVE_PATH = "resnet_kus_5li.pth"
 
-# Hedef Kuşlar
 TARGET_BIRDS = sorted([
     d for d in os.listdir(DATA_PATH)
     if os.path.isdir(os.path.join(DATA_PATH, d))
 ])
 
 # Kontrol için yazdıralım
-print(f"✅ Tespit Edilen Sınıf Sayısı: {len(TARGET_BIRDS)}")
-print(f"📋 Örnek Sınıflar: {TARGET_BIRDS[:5]} ...")
+print(f" Tespit Edilen Sınıf Sayısı: {len(TARGET_BIRDS)}")
+print(f" Örnek Sınıflar: {TARGET_BIRDS[:5]} ...")
 
 # Hiperparametreler
 SAMPLE_RATE = 22050
@@ -47,7 +46,6 @@ def add_noise(signal, noise_factor=0.005):
     noise = np.random.randn(len(signal))
     augmented_signal = signal + noise_factor * noise
     return augmented_signal.astype(np.float32)
-
 
 def plot_confusion_matrix(model, loader, classes):
     model.eval()
