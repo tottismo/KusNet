@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.DS_Store
+.idea/
+.vscode/
+
+mp3/
+mp3_sliced/
