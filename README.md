@@ -8,6 +8,8 @@
 
 **KuşNet**, 50 farklı kuş türünü seslerinden yüksek doğrulukla (%95+) tanıyan, ResNet-18 mimarisi üzerine kurulu bir Derin Öğrenme projesidir. Proje, veri işleme aşamasından canlı web arayüzüne kadar uçtan uca (end-to-end) bir çözüm sunar.
 
+Projenin asıl detaylı raporu repoda "DL Rapor.docx" olarak mevcuttur!
+
 ---
 
 ## 🚀 Proje Özellikleri
@@ -37,15 +39,15 @@ Modelimiz 50 farklı sınıf üzerinde eğitilmiş ve **%95.86 Test Başarısı*
 ## 📂 Proje Yapısı
 
 ```text
-├── dataset/               # Ham ve işlenmiş veriler (Git ignore modunda)
-├── models/                # Eğitilmiş .pth modelleri
-├── src/
-│   ├── slice_audio.py     # Ses dilimleme ve sessizlik temizleme
-│   ├── train.py           # Model eğitimi ve validasyon
-│   ├── inference.py       # Tahminleme motoru
-│   └── app.py             # Gradio web arayüzü
+
+│── kusresnet.py          # Model eğitimi ve validasyon
+│── kusinference.py       # Tahminleme motoru
 ├── ornek_sesler/          # Demo için test sesleri
 ├── requirements.txt       # Gerekli kütüphaneler
+├── resnet_kus_5li.pth     # Eğitilmiş model parametreleri
+├── renet_sonucu.png       # Model skorlarına ilişkin grafik
+├── DL rapor.docx          # Projeye ilişkin  detaylı bilginin bulunduğu rapor
+├── Confusion_Matrix       # Karmaşıklık matrisi grafiği
 └── README.md              # Proje dokümantasyonu
 
 🧠 Nasıl Çalışır?
