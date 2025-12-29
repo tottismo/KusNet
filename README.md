@@ -30,7 +30,7 @@ Modelimiz 50 farklı sınıf üzerinde eğitilmiş ve **%95.86 Test Başarısı*
 
 ### 2. Karmaşıklık Matrisi (Confusion Matrix)
 
-![Confusion Matrix](Confusion_Matrix.jpg)
+![Confusion Matrix](Confusion_Matrix.png)
 
 ---
 
